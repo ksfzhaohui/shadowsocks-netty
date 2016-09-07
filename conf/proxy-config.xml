@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+	<ip_addr>104.194.67.212</ip_addr>
+	<port>443</port>
+	<local_ip_addr>127.0.0.1</local_ip_addr>
+	<local_port>1081</local_port>
+	<method>aes-256-cfb</method>
+	<password>ODdhMDg5MD</password>
+</config>

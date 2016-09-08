@@ -15,7 +15,7 @@ public class SocksServer implements Runnable {
 
 	private static Log logger = LogFactory.getLog(SocksServer.class);
 
-	private static final String CONFIG = "conf/proxy-config.xml";
+	private static final String CONFIG = "conf/config.xml";
 
 	@Override
 	public void run() {

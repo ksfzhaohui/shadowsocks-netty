@@ -1,31 +1,20 @@
 package org.netty.encryption;
 
-import org.bouncycastle.crypto.StreamBlockCipher;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.netty.util.Util;
-
-import javax.crypto.SecretKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.SecureRandom;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
-/**
- * Crypt base class implementation
- */
+import javax.crypto.SecretKey;
+
+import org.bouncycastle.crypto.StreamBlockCipher;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+
 public abstract class CryptBase implements ICrypt {
-
-	protected abstract StreamBlockCipher getCipher(boolean isEncrypted)
-			throws InvalidAlgorithmParameterException;
-
-	protected abstract SecretKey getKey();
-
-	protected abstract void _encrypt(byte[] data, ByteArrayOutputStream stream);
-
-	protected abstract void _decrypt(byte[] data, ByteArrayOutputStream stream);
 
 	protected final String _name;
 	protected final SecretKey _key;
@@ -86,7 +75,7 @@ public abstract class CryptBase implements ICrypt {
 			stream.reset();
 			if (!_encryptIVSet) {
 				_encryptIVSet = true;
-				byte[] iv = Util.randomBytes(_ivLength);
+				byte[] iv = randomBytes(_ivLength);
 				setIV(iv, true);
 				try {
 					stream.write(iv);
@@ -132,4 +121,23 @@ public abstract class CryptBase implements ICrypt {
 		System.arraycopy(data, 0, d, 0, length);
 		decrypt(d, stream);
 	}
+
+	private byte[] randomBytes(int size) {
+		byte[] bytes = new byte[size];
+		new SecureRandom().nextBytes(bytes);
+		return bytes;
+	}
+
+	protected abstract StreamBlockCipher getCipher(boolean isEncrypted)
+			throws InvalidAlgorithmParameterException;
+
+	protected abstract SecretKey getKey();
+
+	protected abstract void _encrypt(byte[] data, ByteArrayOutputStream stream);
+
+	protected abstract void _decrypt(byte[] data, ByteArrayOutputStream stream);
+
+	protected abstract int getIVLength();
+
+	protected abstract int getKeyLength();
 }

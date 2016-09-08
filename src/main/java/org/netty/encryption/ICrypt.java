@@ -3,9 +3,13 @@ package org.netty.encryption;
 import java.io.ByteArrayOutputStream;
 
 /**
- * Interface of crypt
+ * crypt 加密
+ * 
+ * @author zhaohui
+ * 
  */
 public interface ICrypt {
+	
 	void encrypt(byte[] data, ByteArrayOutputStream stream);
 
 	void encrypt(byte[] data, int length, ByteArrayOutputStream stream);
@@ -14,7 +18,4 @@ public interface ICrypt {
 
 	void decrypt(byte[] data, int length, ByteArrayOutputStream stream);
 
-	int getIVLength();
-
-	int getKeyLength();
 }

@@ -1,23 +1,20 @@
 package org.netty.encryption;
 
-import javax.crypto.SecretKey;
-
-import org.netty.util.Util;
-
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
-import java.util.logging.Logger;
+
+import javax.crypto.SecretKey;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Shadowsocks key generator
  */
 public class ShadowSocksKey implements SecretKey {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	private Logger logger = Logger.getLogger(ShadowSocksKey.class.getName());
+	private static Log logger = LogFactory.getLog(ShadowSocksKey.class);
 	private final static int KEY_LENGTH = 32;
 	private byte[] _key;
 	private int _length;
@@ -28,7 +25,6 @@ public class ShadowSocksKey implements SecretKey {
 	}
 
 	public ShadowSocksKey(String password, int length) {
-		// TODO: Invalid key length
 		_length = length;
 		_key = init(password);
 	}
@@ -45,9 +41,9 @@ public class ShadowSocksKey implements SecretKey {
 			md = MessageDigest.getInstance("MD5");
 			passwordBytes = password.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			logger.info("ShadowSocksKey: Unsupported string encoding");
+			logger.error("ShadowSocksKey: Unsupported string encoding", e);
 		} catch (Exception e) {
-			logger.info(Util.getErrorMessage(e));
+			logger.error(e);
 			return null;
 		}
 

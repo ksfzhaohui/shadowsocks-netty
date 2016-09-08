@@ -15,7 +15,10 @@ import org.bouncycastle.crypto.modes.OFBBlockCipher;
 import org.netty.encryption.CryptBase;
 
 /**
- * AES Crypt implementation
+ * AES 实现类
+ * 
+ * @author zhaohui
+ * 
  */
 public class AesCrypt extends CryptBase {
 

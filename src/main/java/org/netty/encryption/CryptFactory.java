@@ -11,9 +11,6 @@ import org.netty.encryption.impl.BlowFishCrypt;
 import org.netty.encryption.impl.CamelliaCrypt;
 import org.netty.encryption.impl.SeedCrypt;
 
-/**
- * Crypt factory
- */
 public class CryptFactory {
 
 	private static Log logger = LogFactory.getLog(CryptFactory.class);

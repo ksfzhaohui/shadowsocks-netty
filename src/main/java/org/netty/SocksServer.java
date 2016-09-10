@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.netty.config.Config;
 import org.netty.config.ConfigXmlLoader;
+import org.netty.config.PacLoader;
 import org.netty.proxy.SocksServerInitializer;
 
 public class SocksServer implements Runnable {
@@ -16,6 +17,8 @@ public class SocksServer implements Runnable {
 	private static Log logger = LogFactory.getLog(SocksServer.class);
 
 	private static final String CONFIG = "conf/config.xml";
+	
+	private static final String PAC = "conf/pac.xml";
 
 	@Override
 	public void run() {
@@ -23,6 +26,8 @@ public class SocksServer implements Runnable {
 		EventLoopGroup workerGroup = null;
 		try {
 			Config config = ConfigXmlLoader.load(CONFIG);
+			PacLoader.load(PAC);
+			
 			bossGroup = new NioEventLoopGroup(1);
 			workerGroup = new NioEventLoopGroup();
 

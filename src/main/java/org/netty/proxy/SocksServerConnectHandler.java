@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.netty.config.Config;
+import org.netty.config.PacLoader;
 import org.netty.encryption.CryptFactory;
 import org.netty.encryption.ICrypt;
 
@@ -40,6 +41,7 @@ public final class SocksServerConnectHandler extends
 	private ByteArrayOutputStream _remoteOutStream;
 	private ByteArrayOutputStream _localOutStream;
 	private Config config;
+	private boolean isProxy = true;
 
 	public SocksServerConnectHandler(Config config) {
 		this.config = config;
@@ -68,7 +70,9 @@ public final class SocksServerConnectHandler extends
 								@Override
 								public void operationComplete(
 										ChannelFuture channelFuture) {
-									sendConnectRemoteMessage(request, outboundChannel);
+									if(isProxy){
+										sendConnectRemoteMessage(request, outboundChannel);
+									}
 									
 									ctx.pipeline().remove(SocksServerConnectHandler.this);
 									outboundChannel.pipeline().addLast(inRelay);
@@ -89,8 +93,10 @@ public final class SocksServerConnectHandler extends
 				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
 				.option(ChannelOption.SO_KEEPALIVE, true)
 				.handler(new DirectClientHandler(promise));
+		
+		setProxy(request.host());
 
-		b.connect(config.get_ipAddr(), config.get_port()).addListener(
+		b.connect(getIpAddr(request), getPort(request)).addListener(
 				new ChannelFutureListener() {
 					@Override
 					public void operationComplete(ChannelFuture future)
@@ -107,6 +113,36 @@ public final class SocksServerConnectHandler extends
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 			throws Exception {
 		SocksServerUtils.closeOnFlush(ctx.channel());
+	}
+	
+	public void setProxy(String host) {
+		isProxy = PacLoader.isProxy(host);
+	}
+	
+	/**
+	 * 获取远程ip地址
+	 * @param request
+	 * @return
+	 */
+	private String getIpAddr(SocksCmdRequest request) {
+		if(isProxy) {
+			return config.get_ipAddr();
+		} else {
+			return request.host();
+		}
+	}
+	
+	/**
+	 * 获取远程端口
+	 * @param request
+	 * @return
+	 */
+	private int getPort(SocksCmdRequest request) {
+		if(isProxy) {
+			return config.get_port();
+		} else {
+			return request.port();
+		}
 	}
 
 	private SocksCmdResponse getSuccessResponse(SocksCmdRequest request) {
@@ -168,17 +204,21 @@ public final class SocksServerConnectHandler extends
 	 * @param channel
 	 */
 	public void sendRemote(byte[] data, int length, Channel channel) {
-		_crypt.encrypt(data, length, _remoteOutStream);
-		byte[] sendData = _remoteOutStream.toByteArray();
-		channel.writeAndFlush(Unpooled.wrappedBuffer(sendData));
-		logger.info("sendRemote message:length = " + length+",channel = " + channel);
+		if(isProxy) {
+			_crypt.encrypt(data, length, _remoteOutStream);
+			data = _remoteOutStream.toByteArray();
+		}
+		channel.writeAndFlush(Unpooled.wrappedBuffer(data));
+		logger.info("sendRemote message:isProxy = " + isProxy +",length = " + length+",channel = " + channel);
 	}
 
 	public void sendLocal(byte[] data, int length, Channel outboundChannel) {
-		_crypt.decrypt(data, length, _localOutStream);
-		byte[] sendData = _localOutStream.toByteArray();
-		outboundChannel.writeAndFlush(Unpooled.wrappedBuffer(sendData));
-		logger.info("sendLocal message:length = " + length + ",channel = " + outboundChannel);
+		if(isProxy) {
+			_crypt.decrypt(data, length, _localOutStream);
+			data = _localOutStream.toByteArray();
+		}
+		outboundChannel.writeAndFlush(Unpooled.wrappedBuffer(data));
+		logger.info("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + outboundChannel);
 	}
 
 }

@@ -18,7 +18,7 @@ public final class SocksServerInitializer extends
 		socksMessageEncoder = new SocksMessageEncoder();
 		socksServerHandler = new SocksServerHandler(config);
 	}
-
+	
 	@Override
 	public void initChannel(SocketChannel socketChannel) throws Exception {
 		ChannelPipeline p = socketChannel.pipeline();

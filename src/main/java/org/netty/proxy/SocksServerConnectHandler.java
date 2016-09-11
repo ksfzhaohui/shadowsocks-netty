@@ -70,13 +70,17 @@ public final class SocksServerConnectHandler extends
 								@Override
 								public void operationComplete(
 										ChannelFuture channelFuture) {
-									if(isProxy){
-										sendConnectRemoteMessage(request, outboundChannel);
+									try {
+										if(isProxy){
+											sendConnectRemoteMessage(request, outboundChannel);
+										}
+										
+										ctx.pipeline().remove(SocksServerConnectHandler.this);
+										outboundChannel.pipeline().addLast(inRelay);
+										ctx.pipeline().addLast(outRelay);
+									} catch (Exception e) {
+										logger.error(e);
 									}
-									
-									ctx.pipeline().remove(SocksServerConnectHandler.this);
-									outboundChannel.pipeline().addLast(inRelay);
-									ctx.pipeline().addLast(outRelay);
 								}
 							});
 				} else {
@@ -163,9 +167,9 @@ public final class SocksServerConnectHandler extends
 	 */
 	private void sendConnectRemoteMessage(SocksCmdRequest request,
 			Channel outboundChannel) {
-		ByteBuf buff = Unpooled.directBuffer();
+		ByteBuf buff = Unpooled.buffer();
 		request.encodeAsByteBuf(buff);
-		if (!buff.hasArray()) {
+		if (buff.hasArray()) {
 			int len = buff.readableBytes();
 			byte[] arr = new byte[len];
 			buff.getBytes(0, arr);
@@ -209,7 +213,7 @@ public final class SocksServerConnectHandler extends
 			data = _remoteOutStream.toByteArray();
 		}
 		channel.writeAndFlush(Unpooled.wrappedBuffer(data));
-		logger.info("sendRemote message:isProxy = " + isProxy +",length = " + length+",channel = " + channel);
+		//logger.info("sendRemote message:isProxy = " + isProxy +",length = " + length+",channel = " + channel);
 	}
 
 	public void sendLocal(byte[] data, int length, Channel outboundChannel) {
@@ -218,7 +222,7 @@ public final class SocksServerConnectHandler extends
 			data = _localOutStream.toByteArray();
 		}
 		outboundChannel.writeAndFlush(Unpooled.wrappedBuffer(data));
-		logger.info("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + outboundChannel);
+		//logger.info("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + outboundChannel);
 	}
 
 }

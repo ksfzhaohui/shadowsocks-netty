@@ -38,7 +38,7 @@ public final class InRelayHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
 		if (relayChannel.isActive()) {
-			logger.info("get remote message" + relayChannel);
+			logger.debug("get remote message" + relayChannel);
 			ByteBuf bytebuff = (ByteBuf) msg;
 			if (!bytebuff.hasArray()) {
 				int len = bytebuff.readableBytes();

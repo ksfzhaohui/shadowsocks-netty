@@ -121,6 +121,7 @@ public final class SocksServerConnectHandler extends
 	
 	public void setProxy(String host) {
 		isProxy = PacLoader.isProxy(host);
+		logger.info("host = " + host + ",isProxy = " + isProxy);
 	}
 	
 	/**
@@ -213,7 +214,7 @@ public final class SocksServerConnectHandler extends
 			data = _remoteOutStream.toByteArray();
 		}
 		channel.writeAndFlush(Unpooled.wrappedBuffer(data));
-		//logger.info("sendRemote message:isProxy = " + isProxy +",length = " + length+",channel = " + channel);
+		logger.debug("sendRemote message:isProxy = " + isProxy +",length = " + length+",channel = " + channel);
 	}
 
 	public void sendLocal(byte[] data, int length, Channel outboundChannel) {
@@ -222,7 +223,7 @@ public final class SocksServerConnectHandler extends
 			data = _localOutStream.toByteArray();
 		}
 		outboundChannel.writeAndFlush(Unpooled.wrappedBuffer(data));
-		//logger.info("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + outboundChannel);
+		logger.debug("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + outboundChannel);
 	}
 
 }

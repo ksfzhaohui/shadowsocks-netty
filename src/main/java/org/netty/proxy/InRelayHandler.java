@@ -18,8 +18,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class InRelayHandler extends ChannelInboundHandlerAdapter {
 
-	private static Log logger = LogFactory
-			.getLog(SocksServerConnectHandler.class);
+	private static Log logger = LogFactory.getLog(InRelayHandler.class);
 
 	private final Channel relayChannel;
 	private SocksServerConnectHandler connectHandler;
@@ -37,17 +36,21 @@ public final class InRelayHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
-		if (relayChannel.isActive()) {
-			logger.debug("get remote message" + relayChannel);
-			ByteBuf bytebuff = (ByteBuf) msg;
-			if (!bytebuff.hasArray()) {
-				int len = bytebuff.readableBytes();
-				byte[] arr = new byte[len];
-				bytebuff.getBytes(0, arr);
+		try {
+			if (relayChannel.isActive()) {
+				logger.debug("get remote message" + relayChannel);
+				ByteBuf bytebuff = (ByteBuf) msg;
+				if (!bytebuff.hasArray()) {
+					int len = bytebuff.readableBytes();
+					byte[] arr = new byte[len];
+					bytebuff.getBytes(0, arr);
 
-				connectHandler.sendLocal(arr, arr.length, relayChannel);
+					connectHandler.sendLocal(arr, arr.length, relayChannel);
+				}
 			}
-		} else {
+		} catch (Exception e) {
+			logger.error(e);
+		} finally {
 			ReferenceCountUtil.release(msg);
 		}
 	}

@@ -7,6 +7,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * localserver接受到数据发送数据给remoteserver
  * 
@@ -14,6 +17,8 @@ import io.netty.util.ReferenceCountUtil;
  * 
  */
 public final class OutRelayHandler extends ChannelInboundHandlerAdapter {
+
+	private static Log logger = LogFactory.getLog(OutRelayHandler.class);
 
 	private final Channel relayChannel;
 	private SocksServerConnectHandler connectHandler;
@@ -31,15 +36,19 @@ public final class OutRelayHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
-		if (relayChannel.isActive()) {
-			ByteBuf bytebuff = (ByteBuf) msg;
-			if (!bytebuff.hasArray()) {
-				int len = bytebuff.readableBytes();
-				byte[] arr = new byte[len];
-				bytebuff.getBytes(0, arr);
-				connectHandler.sendRemote(arr, arr.length, relayChannel);
+		try {
+			if (relayChannel.isActive()) {
+				ByteBuf bytebuff = (ByteBuf) msg;
+				if (!bytebuff.hasArray()) {
+					int len = bytebuff.readableBytes();
+					byte[] arr = new byte[len];
+					bytebuff.getBytes(0, arr);
+					connectHandler.sendRemote(arr, arr.length, relayChannel);
+				}
 			}
-		} else {
+		} catch (Exception e) {
+			logger.error(e);
+		} finally {
 			ReferenceCountUtil.release(msg);
 		}
 	}

@@ -1,3 +1,3 @@
 @echo off
-java -jar shadowsocks-netty-0.0.1-SNAPSHOT.jar
+java -jar shadowsocks-netty-0.1.0-alpha.jar
 pause

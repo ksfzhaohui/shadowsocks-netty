@@ -9,6 +9,7 @@ package org.netty;
 public class Start {
 
 	public static void main(String[] args) {
-		new Thread(new SocksServer()).start();
+		SocksServer ss = new SocksServer();
+		ss.start();
 	}
 }

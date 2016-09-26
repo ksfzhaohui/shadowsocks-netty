@@ -47,7 +47,7 @@ public final class OutRelayHandler extends ChannelInboundHandlerAdapter {
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("send data to remoteServer error",e);
 		} finally {
 			ReferenceCountUtil.release(msg);
 		}

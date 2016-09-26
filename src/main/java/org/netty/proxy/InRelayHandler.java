@@ -44,12 +44,11 @@ public final class InRelayHandler extends ChannelInboundHandlerAdapter {
 					int len = bytebuff.readableBytes();
 					byte[] arr = new byte[len];
 					bytebuff.getBytes(0, arr);
-
 					connectHandler.sendLocal(arr, arr.length, relayChannel);
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("receive remoteServer data error", e);
 		} finally {
 			ReferenceCountUtil.release(msg);
 		}

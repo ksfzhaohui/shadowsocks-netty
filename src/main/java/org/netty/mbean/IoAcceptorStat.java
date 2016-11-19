@@ -1,15 +1,19 @@
 package org.netty.mbean;
 
+import org.netty.SocksServer;
+
 public class IoAcceptorStat implements IoAcceptorStatMBean {
 
 	@Override
-	public double getWrittenBytesThroughput() {
-		return 0;
+	public long getWrittenBytesThroughput() {
+		return SocksServer.getInstance().getTrafficCounter()
+				.lastWriteThroughput();
 	}
 
 	@Override
-	public double getReadBytesThroughput() {
-		return 0;
+	public long getReadBytesThroughput() {
+		return SocksServer.getInstance().getTrafficCounter()
+				.lastReadThroughput();
 	}
 
 }

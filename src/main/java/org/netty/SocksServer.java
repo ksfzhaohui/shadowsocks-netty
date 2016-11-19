@@ -4,8 +4,11 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+import io.netty.handler.traffic.TrafficCounter;
 
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.Executors;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -29,6 +32,17 @@ public class SocksServer {
 	private EventLoopGroup bossGroup = null;
 	private EventLoopGroup workerGroup = null;
 	private ServerBootstrap bootstrap = null;
+	private GlobalTrafficShapingHandler trafficHandler;
+
+	private static SocksServer socksServer = new SocksServer();
+
+	public static SocksServer getInstance() {
+		return socksServer;
+	}
+
+	private SocksServer() {
+
+	}
 
 	public void start() {
 		try {
@@ -38,15 +52,19 @@ public class SocksServer {
 			bossGroup = new NioEventLoopGroup(1);
 			workerGroup = new NioEventLoopGroup();
 			bootstrap = new ServerBootstrap();
-			bootstrap.group(bossGroup, workerGroup)
+			trafficHandler = new GlobalTrafficShapingHandler(
+					Executors.newScheduledThreadPool(1), 1000);
+
+			bootstrap
+					.group(bossGroup, workerGroup)
 					.channel(NioServerSocketChannel.class)
-					.childHandler(new SocksServerInitializer(config));
+					.childHandler(
+							new SocksServerInitializer(config, trafficHandler));
 
 			logger.info("Start At Port " + config.get_localPort());
+			startMBean();
 			bootstrap.bind(config.get_localPort()).sync().channel()
 					.closeFuture().sync();
-
-			startMBean();
 		} catch (Exception e) {
 			logger.error("start error", e);
 		} finally {
@@ -77,8 +95,12 @@ public class SocksServer {
 					+ ":type=IoAcceptorStat");
 			mBeanServer.registerMBean(mbean, acceptorName);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("java MBean error", e);
 		}
+	}
+
+	public TrafficCounter getTrafficCounter() {
+		return trafficHandler.trafficCounter();
 	}
 
 }

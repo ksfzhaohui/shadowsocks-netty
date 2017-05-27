@@ -84,9 +84,7 @@ public final class SocksServerConnectHandler extends
 								}
 							});
 				} else {
-					ctx.channel().writeAndFlush(
-							new SocksCmdResponse(SocksCmdStatus.FAILURE,
-									request.addressType()));
+					ctx.channel().writeAndFlush(getFailureResponse(request));
 					SocksServerUtils.closeOnFlush(ctx.channel());
 				}
 			}
@@ -217,13 +215,19 @@ public final class SocksServerConnectHandler extends
 		logger.debug("sendRemote message:isProxy = " + isProxy +",length = " + length+",channel = " + channel);
 	}
 
-	public void sendLocal(byte[] data, int length, Channel outboundChannel) {
+	/**
+	 * 给本地客户端回复消息--需要进行解密处理
+	 * @param data
+	 * @param length
+	 * @param channel
+	 */
+	public void sendLocal(byte[] data, int length, Channel channel) {
 		if(isProxy) {
 			_crypt.decrypt(data, length, _localOutStream);
 			data = _localOutStream.toByteArray();
 		}
-		outboundChannel.writeAndFlush(Unpooled.wrappedBuffer(data));
-		logger.debug("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + outboundChannel);
+		channel.writeAndFlush(Unpooled.wrappedBuffer(data));
+		logger.debug("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + channel);
 	}
 
 }

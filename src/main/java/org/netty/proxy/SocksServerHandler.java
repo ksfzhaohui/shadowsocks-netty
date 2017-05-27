@@ -39,6 +39,7 @@ public final class SocksServerHandler extends
 			break;
 		}
 		case AUTH:
+			logger.info("localserver auth");
 			ctx.pipeline().addFirst(new SocksCmdRequestDecoder());
 			ctx.write(new SocksAuthResponse(SocksAuthStatus.SUCCESS));
 			break;

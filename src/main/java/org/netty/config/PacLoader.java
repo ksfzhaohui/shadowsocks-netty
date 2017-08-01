@@ -46,26 +46,24 @@ public class PacLoader {
 
 		loadFile(filePath);
 
-		Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
-				new Runnable() {
+		Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(new Runnable() {
 
-					@Override
-					public void run() {
-						try {
-							load(filePath);
-						} catch (Exception e) {
-							log.error(e);
-						}
-					}
-				}, reloadTime, reloadTime, TimeUnit.SECONDS);
+			@Override
+			public void run() {
+				try {
+					load(filePath);
+				} catch (Exception e) {
+					log.error(e);
+				}
+			}
+		}, reloadTime, reloadTime, TimeUnit.SECONDS);
 	}
 
 	private synchronized static void loadFile(String file) throws Exception {
 		tempList.clear();
 		InputStream in = null;
 		try {
-			DocumentBuilder builder = DocumentBuilderFactory.newInstance()
-					.newDocumentBuilder();
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			in = new FileInputStream(file);
 			Document doc = builder.parse(in);
 			NodeList list = doc.getElementsByTagName("domain");
@@ -101,11 +99,22 @@ public class PacLoader {
 	 * @return
 	 */
 	public synchronized static boolean isProxy(String host) {
-		for (String domain : domainList) {
-			if (host.contains(domain)) {
+		String suffix;
+		int pos = host.lastIndexOf('.');
+		pos = host.lastIndexOf('.', pos - 1);
+		while (true) {
+			if (pos <= 0) {
+				if (domainList.contains(host)) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+			suffix = host.substring(pos + 1);
+			if (domainList.contains(suffix)) {
 				return true;
 			}
+			pos = host.lastIndexOf('.', pos - 1);
 		}
-		return false;
 	}
 }

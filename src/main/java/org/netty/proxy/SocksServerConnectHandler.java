@@ -19,6 +19,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,120 +29,105 @@ import org.netty.encryption.CryptFactory;
 import org.netty.encryption.ICrypt;
 
 @ChannelHandler.Sharable
-public final class SocksServerConnectHandler extends
-		SimpleChannelInboundHandler<SocksCmdRequest> {
+public final class SocksServerConnectHandler extends SimpleChannelInboundHandler<SocksCmdRequest> {
 
-	private static Log logger = LogFactory
-			.getLog(SocksServerConnectHandler.class);
-	
-	public static final int BUFFER_SIZE = 16384;
+	private static Log logger = LogFactory.getLog(SocksServerConnectHandler.class);
 
 	private final Bootstrap b = new Bootstrap();
 	private ICrypt _crypt;
-	private ByteArrayOutputStream _remoteOutStream;
-	private ByteArrayOutputStream _localOutStream;
 	private Config config;
 	private boolean isProxy = true;
 
 	public SocksServerConnectHandler(Config config) {
 		this.config = config;
 		this._crypt = CryptFactory.get(config.get_method(), config.get_password());
-		this._remoteOutStream = new ByteArrayOutputStream(BUFFER_SIZE);
-		this._localOutStream = new ByteArrayOutputStream(BUFFER_SIZE);
 	}
 
 	@Override
-	public void channelRead0(final ChannelHandlerContext ctx,
-			final SocksCmdRequest request) throws Exception {
+	public void channelRead0(final ChannelHandlerContext ctx, final SocksCmdRequest request) throws Exception {
 		Promise<Channel> promise = ctx.executor().newPromise();
 		promise.addListener(new GenericFutureListener<Future<Channel>>() {
 			@Override
-			public void operationComplete(final Future<Channel> future)
-					throws Exception {
+			public void operationComplete(final Future<Channel> future) throws Exception {
 				final Channel outboundChannel = future.getNow();
 				if (future.isSuccess()) {
-					final InRelayHandler inRelay = new InRelayHandler(ctx
-							.channel(), SocksServerConnectHandler.this);
-					final OutRelayHandler outRelay = new OutRelayHandler(
-							outboundChannel, SocksServerConnectHandler.this);
+					final InRelayHandler inRelay = new InRelayHandler(ctx.channel(), SocksServerConnectHandler.this);
+					final OutRelayHandler outRelay = new OutRelayHandler(outboundChannel,
+							SocksServerConnectHandler.this);
 
-					ctx.channel().writeAndFlush(getSuccessResponse(request))
-							.addListener(new ChannelFutureListener() {
-								@Override
-								public void operationComplete(
-										ChannelFuture channelFuture) {
-									try {
-										if(isProxy){
-											sendConnectRemoteMessage(request, outboundChannel);
-										}
-										
-										ctx.pipeline().remove(SocksServerConnectHandler.this);
-										outboundChannel.pipeline().addLast(inRelay);
-										ctx.pipeline().addLast(outRelay);
-									} catch (Exception e) {
-										logger.error(e);
-									}
+					ctx.channel().writeAndFlush(getSuccessResponse(request)).addListener(new ChannelFutureListener() {
+						@Override
+						public void operationComplete(ChannelFuture channelFuture) {
+							try {
+								if (isProxy) {
+									sendConnectRemoteMessage(request, outboundChannel);
 								}
-							});
+
+								ctx.pipeline().remove(SocksServerConnectHandler.this);
+								outboundChannel.pipeline().addLast(inRelay);
+								ctx.pipeline().addLast(outRelay);
+							} catch (Exception e) {
+								logger.error(e);
+							}
+						}
+					});
 				} else {
 					ctx.channel().writeAndFlush(getFailureResponse(request));
 					SocksServerUtils.closeOnFlush(ctx.channel());
 				}
 			}
 		});
-		
+
 		final Channel inboundChannel = ctx.channel();
 		b.group(inboundChannel.eventLoop()).channel(NioSocketChannel.class)
-				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-				.option(ChannelOption.SO_KEEPALIVE, true)
+				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000).option(ChannelOption.SO_KEEPALIVE, true)
 				.handler(new DirectClientHandler(promise));
-		
+
 		setProxy(request.host());
 
-		b.connect(getIpAddr(request), getPort(request)).addListener(
-				new ChannelFutureListener() {
-					@Override
-					public void operationComplete(ChannelFuture future)
-							throws Exception {
-						if (!future.isSuccess()) {
-							ctx.channel().writeAndFlush(getFailureResponse(request));
-							SocksServerUtils.closeOnFlush(ctx.channel());
-						}
-					}
-				});
+		b.connect(getIpAddr(request), getPort(request)).addListener(new ChannelFutureListener() {
+			@Override
+			public void operationComplete(ChannelFuture future) throws Exception {
+				if (!future.isSuccess()) {
+					ctx.channel().writeAndFlush(getFailureResponse(request));
+					SocksServerUtils.closeOnFlush(ctx.channel());
+				}
+			}
+		});
 	}
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-			throws Exception {
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		SocksServerUtils.closeOnFlush(ctx.channel());
 	}
-	
+
 	public void setProxy(String host) {
 		isProxy = PacLoader.isProxy(host);
 		logger.info("host = " + host + ",isProxy = " + isProxy);
 	}
-	
+
 	/**
 	 * 获取远程ip地址
+	 * 
 	 * @param request
 	 * @return
 	 */
 	private String getIpAddr(SocksCmdRequest request) {
-		if(isProxy) {
+		if (isProxy) {
 			return config.get_ipAddr();
 		} else {
 			return request.host();
 		}
 	}
-	
+
 	/**
 	 * 获取远程端口
+	 * 
 	 * @param request
 	 * @return
 	 */
 	private int getPort(SocksCmdRequest request) {
-		if(isProxy) {
+		if (isProxy) {
 			return config.get_port();
 		} else {
 			return request.port();
@@ -149,13 +135,11 @@ public final class SocksServerConnectHandler extends
 	}
 
 	private SocksCmdResponse getSuccessResponse(SocksCmdRequest request) {
-		return new SocksCmdResponse(SocksCmdStatus.SUCCESS,
-				request.addressType());
+		return new SocksCmdResponse(SocksCmdStatus.SUCCESS, request.addressType());
 	}
 
 	private SocksCmdResponse getFailureResponse(SocksCmdRequest request) {
-		return new SocksCmdResponse(SocksCmdStatus.FAILURE,
-				request.addressType());
+		return new SocksCmdResponse(SocksCmdStatus.FAILURE, request.addressType());
 	}
 
 	/**
@@ -164,8 +148,7 @@ public final class SocksServerConnectHandler extends
 	 * @param request
 	 * @param outboundChannel
 	 */
-	private void sendConnectRemoteMessage(SocksCmdRequest request,
-			Channel outboundChannel) {
+	private void sendConnectRemoteMessage(SocksCmdRequest request, Channel outboundChannel) {
 		ByteBuf buff = Unpooled.buffer();
 		request.encodeAsByteBuf(buff);
 		if (buff.hasArray()) {
@@ -180,11 +163,10 @@ public final class SocksServerConnectHandler extends
 	/**
 	 * localserver和remoteserver进行connect发送的数据
 	 * 
-	 * +-----+-----+-------+------+----------+----------+
-     * | VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
-     * +-----+-----+-------+------+----------+----------+
-     * |  1  |  1  | X'00' |  1   | Variable |    2     |
-     * +-----+-----+-------+------+----------+----------+
+	 * +-----+-----+-------+------+----------+----------+ | VER | CMD | RSV |
+	 * ATYP | DST.ADDR | DST.PORT |
+	 * +-----+-----+-------+------+----------+----------+ | 1 | 1 | X'00' | 1 |
+	 * Variable | 2 | +-----+-----+-------+------+----------+----------+
 	 * 
 	 * 需要跳过前面3个字节
 	 * 
@@ -207,27 +189,54 @@ public final class SocksServerConnectHandler extends
 	 * @param channel
 	 */
 	public void sendRemote(byte[] data, int length, Channel channel) {
-		if(isProxy) {
-			_crypt.encrypt(data, length, _remoteOutStream);
-			data = _remoteOutStream.toByteArray();
+		ByteArrayOutputStream _remoteOutStream = null;
+		try {
+			_remoteOutStream = new ByteArrayOutputStream();
+			if (isProxy) {
+				_crypt.encrypt(data, length, _remoteOutStream);
+				data = _remoteOutStream.toByteArray();
+			}
+			channel.writeAndFlush(Unpooled.wrappedBuffer(data));
+		} catch (Exception e) {
+			logger.error("sendRemote error", e);
+		} finally {
+			if (_remoteOutStream != null) {
+				try {
+					_remoteOutStream.close();
+				} catch (IOException e) {
+				}
+			}
 		}
-		channel.writeAndFlush(Unpooled.wrappedBuffer(data));
-		logger.debug("sendRemote message:isProxy = " + isProxy +",length = " + length+",channel = " + channel);
+		logger.debug("sendRemote message:isProxy = " + isProxy + ",length = " + length + ",channel = " + channel);
 	}
 
 	/**
 	 * 给本地客户端回复消息--需要进行解密处理
+	 * 
 	 * @param data
 	 * @param length
 	 * @param channel
 	 */
 	public void sendLocal(byte[] data, int length, Channel channel) {
-		if(isProxy) {
-			_crypt.decrypt(data, length, _localOutStream);
-			data = _localOutStream.toByteArray();
+		ByteArrayOutputStream _localOutStream = null;
+		try {
+			_localOutStream = new ByteArrayOutputStream();
+			if (isProxy) {
+				_crypt.decrypt(data, length, _localOutStream);
+				data = _localOutStream.toByteArray();
+			}
+			channel.writeAndFlush(Unpooled.wrappedBuffer(data));
+		} catch (Exception e) {
+			logger.error("sendLocal error", e);
+		} finally {
+			if (_localOutStream != null) {
+				try {
+					_localOutStream.close();
+				} catch (IOException e) {
+				}
+			}
 		}
-		channel.writeAndFlush(Unpooled.wrappedBuffer(data));
-		logger.debug("sendLocal message:isProxy = " + isProxy +",length = " + length + ",channel = " + channel);
+		logger.debug("sendLocal message:isProxy = " + isProxy + ",length = " + length + ",channel = " + channel);
 	}
 
 }

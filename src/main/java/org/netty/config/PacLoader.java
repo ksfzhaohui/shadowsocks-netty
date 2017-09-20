@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -24,7 +25,7 @@ import org.w3c.dom.NodeList;
  */
 public class PacLoader {
 
-	private static Logger log = Logger.getLogger(PacLoader.class);
+	private static Logger log = LoggerFactory.getLogger(PacLoader.class);
 
 	private static List<String> domainList = new ArrayList<String>();
 	private static List<String> tempList = new ArrayList<String>();
@@ -53,7 +54,7 @@ public class PacLoader {
 				try {
 					load(filePath);
 				} catch (Exception e) {
-					log.error(e);
+					log.error("load pac error", e);
 				}
 			}
 		}, reloadTime, reloadTime, TimeUnit.SECONDS);

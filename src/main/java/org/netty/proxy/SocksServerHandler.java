@@ -1,8 +1,8 @@
 package org.netty.proxy;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.netty.config.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,7 +20,7 @@ import io.netty.handler.codec.socks.SocksRequest;
 public final class SocksServerHandler extends
 		SimpleChannelInboundHandler<SocksRequest> {
 
-	private static Log logger = LogFactory.getLog(SocksServerHandler.class);
+	private static Logger logger = LoggerFactory.getLogger(SocksServerHandler.class);
 
 	private Config config;
 

@@ -1,14 +1,14 @@
 package org.netty.proxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 接受remoteserver的数据，发送给客户端
@@ -18,7 +18,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class InRelayHandler extends ChannelInboundHandlerAdapter {
 
-	private static Log logger = LogFactory.getLog(InRelayHandler.class);
+	private static Logger logger = LoggerFactory.getLogger(InRelayHandler.class);
 
 	private final Channel relayChannel;
 	private SocksServerConnectHandler connectHandler;

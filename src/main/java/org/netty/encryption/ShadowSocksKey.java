@@ -5,8 +5,8 @@ import java.security.MessageDigest;
 
 import javax.crypto.SecretKey;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Shadowsocks key generator
@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
 public class ShadowSocksKey implements SecretKey {
 
 	private static final long serialVersionUID = 1L;
-	private static Log logger = LogFactory.getLog(ShadowSocksKey.class);
+	private static Logger logger = LoggerFactory.getLogger(ShadowSocksKey.class);
 	private final static int KEY_LENGTH = 32;
 	private byte[] _key;
 	private int _length;
@@ -43,7 +43,7 @@ public class ShadowSocksKey implements SecretKey {
 		} catch (UnsupportedEncodingException e) {
 			logger.error("ShadowSocksKey: Unsupported string encoding", e);
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("init error", e);
 			return null;
 		}
 
@@ -53,8 +53,7 @@ public class ShadowSocksKey implements SecretKey {
 				temp = new byte[passwordBytes.length + hash.length];
 			} else {
 				System.arraycopy(hash, 0, temp, 0, hash.length);
-				System.arraycopy(passwordBytes, 0, temp, hash.length,
-						passwordBytes.length);
+				System.arraycopy(passwordBytes, 0, temp, hash.length, passwordBytes.length);
 				hash = md.digest(temp);
 			}
 			System.arraycopy(hash, 0, keys, i, hash.length);

@@ -4,16 +4,16 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.netty.encryption.impl.AesCrypt;
 import org.netty.encryption.impl.BlowFishCrypt;
 import org.netty.encryption.impl.CamelliaCrypt;
 import org.netty.encryption.impl.SeedCrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CryptFactory {
 
-	private static Log logger = LogFactory.getLog(CryptFactory.class);
+	private static Logger logger = LoggerFactory.getLogger(CryptFactory.class);
 
 	private static Map<String, String> crypts = new HashMap<String, String>();
 
@@ -32,8 +32,7 @@ public class CryptFactory {
 
 		try {
 			Class<?> clazz = Class.forName(className);
-			Constructor<?> constructor = clazz.getConstructor(String.class,
-					String.class);
+			Constructor<?> constructor = clazz.getConstructor(String.class, String.class);
 			return (ICrypt) constructor.newInstance(name, password);
 		} catch (Exception e) {
 			logger.error("get crypt error", e);

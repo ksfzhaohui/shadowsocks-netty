@@ -1,5 +1,15 @@
 package org.netty.proxy;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import org.netty.config.Config;
+import org.netty.config.PacLoader;
+import org.netty.encryption.CryptFactory;
+import org.netty.encryption.ICrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -18,20 +28,10 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.netty.config.Config;
-import org.netty.config.PacLoader;
-import org.netty.encryption.CryptFactory;
-import org.netty.encryption.ICrypt;
-
 @ChannelHandler.Sharable
 public final class SocksServerConnectHandler extends SimpleChannelInboundHandler<SocksCmdRequest> {
 
-	private static Log logger = LogFactory.getLog(SocksServerConnectHandler.class);
+	private static Logger logger = LoggerFactory.getLogger(SocksServerConnectHandler.class);
 
 	private final Bootstrap b = new Bootstrap();
 	private ICrypt _crypt;
@@ -67,7 +67,7 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 								outboundChannel.pipeline().addLast(inRelay);
 								ctx.pipeline().addLast(outRelay);
 							} catch (Exception e) {
-								logger.error(e);
+								logger.error("", e);
 							}
 						}
 					});

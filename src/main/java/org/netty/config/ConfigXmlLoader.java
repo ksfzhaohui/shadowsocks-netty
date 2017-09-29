@@ -49,6 +49,12 @@ public class ConfigXmlLoader {
 						config.set_method(childs.item(j).getTextContent());
 					} else if ("password".equals(childs.item(j).getNodeName())) {
 						config.set_password(childs.item(j).getTextContent());
+					} else if ("global_mode".equals(childs.item(j).getNodeName())) {
+						if ("true".equalsIgnoreCase(childs.item(j).getTextContent())) {
+							config.set_global_mode(true);
+						} else {
+							config.set_global_mode(false);
+						}
 					}
 				}
 			}

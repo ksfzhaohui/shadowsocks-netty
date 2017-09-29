@@ -6,4 +6,5 @@
 	<local_port>1080</local_port>
 	<method>aes-256-cfb</method>
 	<password>xxxxxx</password>
+	<global_mode>false</global_mode>
 </config>

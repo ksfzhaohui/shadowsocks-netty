@@ -21,6 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.socks.SocksAddressType;
 import io.netty.handler.codec.socks.SocksCmdRequest;
 import io.netty.handler.codec.socks.SocksCmdResponse;
 import io.netty.handler.codec.socks.SocksCmdStatus;
@@ -85,6 +86,8 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 
 		setProxy(request.host());
 
+		logger.info("host = " + request.host() + ",port = " + request.port() + ",isProxy = " + isProxy);
+
 		b.connect(getIpAddr(request), getPort(request)).addListener(new ChannelFutureListener() {
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
@@ -107,7 +110,6 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 		} else {
 			isProxy = PacLoader.isProxy(host);
 		}
-		logger.info("host = " + host + ",isProxy = " + isProxy);
 	}
 
 	/**
@@ -139,11 +141,11 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 	}
 
 	private SocksCmdResponse getSuccessResponse(SocksCmdRequest request) {
-		return new SocksCmdResponse(SocksCmdStatus.SUCCESS, request.addressType());
+		return new SocksCmdResponse(SocksCmdStatus.SUCCESS, SocksAddressType.IPv4);
 	}
 
 	private SocksCmdResponse getFailureResponse(SocksCmdRequest request) {
-		return new SocksCmdResponse(SocksCmdStatus.FAILURE, request.addressType());
+		return new SocksCmdResponse(SocksCmdStatus.FAILURE, SocksAddressType.IPv4);
 	}
 
 	/**

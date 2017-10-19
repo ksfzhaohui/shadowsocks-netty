@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
-	<ip_addr>xxxxxx</ip_addr>
+	<ip_addr>xxxxx</ip_addr>
 	<port>1082</port>
 	<local_ip_addr>127.0.0.1</local_ip_addr>
 	<local_port>1080</local_port>
 	<method>aes-256-cfb</method>
-	<password>xxxxxx</password>
-	<global_mode>false</global_mode>
+	<password>xxxx</password>
 </config>

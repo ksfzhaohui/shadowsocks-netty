@@ -29,6 +29,8 @@ public class PacLoader {
 
 	private static List<String> domainList = new ArrayList<String>();
 	private static List<String> tempList = new ArrayList<String>();
+	/**是否是全局代理模式**/
+	private static boolean _global_mode;
 
 	/** 重加载的间隔时间 **/
 	private static int reloadTime = 5;
@@ -75,6 +77,17 @@ public class PacLoader {
 				}
 			}
 			setDomainList(tempList);
+
+			NodeList globalList = doc.getElementsByTagName("global_mode");
+			if (globalList.getLength() > 0) {
+				String global = globalList.item(0).getTextContent();
+				if ("true".equalsIgnoreCase(global)) {
+					set_global_mode(true);
+				} else {
+					set_global_mode(false);
+				}
+			}
+
 			log.info("load pac !");
 		} catch (Exception e) {
 			throw e;
@@ -118,4 +131,13 @@ public class PacLoader {
 			pos = host.lastIndexOf('.', pos - 1);
 		}
 	}
+
+	public static boolean is_global_mode() {
+		return _global_mode;
+	}
+
+	public static void set_global_mode(boolean _global_mode) {
+		PacLoader._global_mode = _global_mode;
+	}
+
 }

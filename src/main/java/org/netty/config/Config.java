@@ -14,22 +14,18 @@ public class Config {
 	private int _localPort;
 	private String _method;
 	private String _password;
-	/**是否是全局代理模式**/
-	private boolean _global_mode;
 
 	public Config() {
 
 	}
 
-	public Config(String ipAddr, int port, String localIpAddr, int localPort, String method, String password,
-			boolean global_mode) {
+	public Config(String ipAddr, int port, String localIpAddr, int localPort, String method, String password) {
 		_ipAddr = ipAddr;
 		_port = port;
 		_localIpAddr = localIpAddr;
 		_localPort = localPort;
 		_method = method;
 		_password = password;
-		_global_mode = global_mode;
 	}
 
 	public String get_ipAddr() {
@@ -78,14 +74,6 @@ public class Config {
 
 	public void set_password(String _password) {
 		this._password = _password;
-	}
-
-	public boolean is_global_mode() {
-		return _global_mode;
-	}
-
-	public void set_global_mode(boolean _global_mode) {
-		this._global_mode = _global_mode;
 	}
 
 }

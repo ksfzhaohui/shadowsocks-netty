@@ -105,7 +105,7 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 	}
 
 	public void setProxy(String host) {
-		if (config.is_global_mode()) {
+		if (PacLoader.is_global_mode()) {
 			isProxy = true;
 		} else {
 			isProxy = PacLoader.isProxy(host);

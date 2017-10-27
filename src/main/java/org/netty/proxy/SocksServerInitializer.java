@@ -7,20 +7,16 @@ import io.netty.handler.codec.socks.SocksInitRequestDecoder;
 import io.netty.handler.codec.socks.SocksMessageEncoder;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 
-import org.netty.config.Config;
-
-public final class SocksServerInitializer extends
-		ChannelInitializer<SocketChannel> {
+public final class SocksServerInitializer extends ChannelInitializer<SocketChannel> {
 
 	private SocksMessageEncoder socksMessageEncoder;
 	private SocksServerHandler socksServerHandler;
 	private GlobalTrafficShapingHandler trafficHandler;
 
-	public SocksServerInitializer(Config config,
-			GlobalTrafficShapingHandler trafficHandler) {
+	public SocksServerInitializer(GlobalTrafficShapingHandler trafficHandler) {
 		this.trafficHandler = trafficHandler;
 		socksMessageEncoder = new SocksMessageEncoder();
-		socksServerHandler = new SocksServerHandler(config);
+		socksServerHandler = new SocksServerHandler();
 	}
 
 	@Override

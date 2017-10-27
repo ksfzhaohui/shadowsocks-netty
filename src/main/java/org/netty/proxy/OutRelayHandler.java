@@ -23,8 +23,7 @@ public final class OutRelayHandler extends ChannelInboundHandlerAdapter {
 	private final Channel relayChannel;
 	private SocksServerConnectHandler connectHandler;
 
-	public OutRelayHandler(Channel relayChannel,
-			SocksServerConnectHandler connectHandler) {
+	public OutRelayHandler(Channel relayChannel, SocksServerConnectHandler connectHandler) {
 		this.relayChannel = relayChannel;
 		this.connectHandler = connectHandler;
 	}
@@ -47,7 +46,7 @@ public final class OutRelayHandler extends ChannelInboundHandlerAdapter {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("send data to remoteServer error",e);
+			logger.error("send data to remoteServer error", e);
 		} finally {
 			ReferenceCountUtil.release(msg);
 		}
@@ -55,9 +54,9 @@ public final class OutRelayHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) {
-		if (relayChannel.isActive()) {
-			SocksServerUtils.closeOnFlush(relayChannel);
-		}
+		SocksServerUtils.closeOnFlush(relayChannel);
+		SocksServerUtils.closeOnFlush(ctx.channel());
+		logger.info("outRelay channelInactive close");
 	}
 
 	@Override

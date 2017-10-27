@@ -9,6 +9,7 @@ import javax.management.ObjectName;
 import org.netty.config.Config;
 import org.netty.config.ConfigXmlLoader;
 import org.netty.config.PacLoader;
+import org.netty.manager.RemoteServerManager;
 import org.netty.mbean.IoAcceptorStat;
 import org.netty.proxy.SocksServerInitializer;
 import org.slf4j.Logger;
@@ -48,23 +49,19 @@ public class SocksServer {
 		try {
 			Config config = ConfigXmlLoader.load(CONFIG);
 			PacLoader.load(PAC);
+			RemoteServerManager.init(config);
 
 			bossGroup = new NioEventLoopGroup(1);
 			workerGroup = new NioEventLoopGroup();
 			bootstrap = new ServerBootstrap();
-			trafficHandler = new GlobalTrafficShapingHandler(
-					Executors.newScheduledThreadPool(1), 1000);
+			trafficHandler = new GlobalTrafficShapingHandler(Executors.newScheduledThreadPool(1), 1000);
 
-			bootstrap
-					.group(bossGroup, workerGroup)
-					.channel(NioServerSocketChannel.class)
-					.childHandler(
-							new SocksServerInitializer(config, trafficHandler));
+			bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+					.childHandler(new SocksServerInitializer(trafficHandler));
 
 			logger.info("Start At Port " + config.get_localPort());
 			startMBean();
-			bootstrap.bind(config.get_localPort()).sync().channel()
-					.closeFuture().sync();
+			bootstrap.bind(config.get_localPort()).sync().channel().closeFuture().sync();
 		} catch (Exception e) {
 			logger.error("start error", e);
 		} finally {
@@ -90,9 +87,7 @@ public class SocksServer {
 		IoAcceptorStat mbean = new IoAcceptorStat();
 
 		try {
-			ObjectName acceptorName = new ObjectName(mbean.getClass()
-					.getPackage().getName()
-					+ ":type=IoAcceptorStat");
+			ObjectName acceptorName = new ObjectName(mbean.getClass().getPackage().getName() + ":type=IoAcceptorStat");
 			mBeanServer.registerMBean(mbean, acceptorName);
 		} catch (Exception e) {
 			logger.error("java MBean error", e);

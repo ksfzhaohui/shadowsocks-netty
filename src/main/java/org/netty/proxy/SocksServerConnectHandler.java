@@ -3,10 +3,11 @@ package org.netty.proxy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.netty.config.Config;
 import org.netty.config.PacLoader;
+import org.netty.config.RemoteServer;
 import org.netty.encryption.CryptFactory;
 import org.netty.encryption.ICrypt;
+import org.netty.manager.RemoteServerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,12 +37,12 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 
 	private final Bootstrap b = new Bootstrap();
 	private ICrypt _crypt;
-	private Config config;
+	private RemoteServer remoteServer;
 	private boolean isProxy = true;
 
-	public SocksServerConnectHandler(Config config) {
-		this.config = config;
-		this._crypt = CryptFactory.get(config.get_method(), config.get_password());
+	public SocksServerConnectHandler() {
+		this.remoteServer = RemoteServerManager.getRemoteServer();
+		this._crypt = CryptFactory.get(remoteServer.get_method(), remoteServer.get_password());
 	}
 
 	@Override
@@ -120,7 +121,7 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 	 */
 	private String getIpAddr(SocksCmdRequest request) {
 		if (isProxy) {
-			return config.get_ipAddr();
+			return remoteServer.get_ipAddr();
 		} else {
 			return request.host();
 		}
@@ -134,7 +135,7 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 	 */
 	private int getPort(SocksCmdRequest request) {
 		if (isProxy) {
-			return config.get_port();
+			return remoteServer.get_port();
 		} else {
 			return request.port();
 		}

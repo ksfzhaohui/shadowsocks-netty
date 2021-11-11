@@ -15,6 +15,6 @@ firefox代理设置
 ---
 firefox自带设置socks代理功能，直接设置就行了
 
-更多介绍
+更多详细介绍
 ---
 [基于netty4.0的shadowsocks客户端](http://my.oschina.net/OutOfMemory/blog/744475)

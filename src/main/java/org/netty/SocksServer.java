@@ -22,6 +22,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
 
+/**
+ * server
+ */
 public class SocksServer {
 
 	private static Logger logger = LoggerFactory.getLogger(SocksServer.class);

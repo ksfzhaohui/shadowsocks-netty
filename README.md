@@ -1,7 +1,7 @@
 基于netty4.0实现的shadowsocks客户端
 ====
 
-使用
+如何使用
 ---
 1.maven打包，生成shadowsocks-netty-0.1.0-alpha-bin.zip包<br>
 2.解压zip包，conf/config.xml中配置shadowsocks服务器地址<br>
